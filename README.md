@@ -1,0 +1,2 @@
+# YYChatMarqueeLabelView
+基于CoreText的图文排版控件
