@@ -1,0 +1,16 @@
+PODS:
+  - YYChatMarqueeLabelView (0.1.0)
+
+DEPENDENCIES:
+  - YYChatMarqueeLabelView (from `../`)
+
+EXTERNAL SOURCES:
+  YYChatMarqueeLabelView:
+    :path: ../
+
+SPEC CHECKSUMS:
+  YYChatMarqueeLabelView: 19c7e57079a4166ba5411f792dc7505ae507547c
+
+PODFILE CHECKSUM: d8d288ea8a565273e59ad50469f7c547860316af
+
+COCOAPODS: 1.4.0
