@@ -124,7 +124,7 @@ align=center>
 
 @implementation YYChatMarqueeLabelView
 
--(void)drawRect:(CGRect)rect
+- (void)drawRect:(CGRect)rect
 {
     [super drawRect:rect];
 
@@ -151,6 +151,31 @@ align=center>
     }
 }
 ```
+
+## 基于CoreText的基本封装
+我们可以将功能拆分为以下几个类来完成
+* YYChatMarqueeLabelView：一个显示用的类，仅仅负责渲染
+* YYChatMarqueeText：一个模型类， 用于保存富文本的所有内容
+* YYChatMarqueeTextAttachment：一个附件类, 用于保存图片附件和计算的高度
+* YYChatMarqueeTextParser：一个工具类，用于转换和封装
+
+这4个类的关系是这样的：
+
+1.YYChatMarqueeText被创建时需要传入NSAttributedString，并在内部创建一个YYChatMarqueeTextParser
+
+2.YYChatMarqueeTextParser会解析传入的NSAttributedString解析出包含图片的封装类YYChatMarqueeTextAttachment
+
+3.YYChatMarqueeText根据传入NSAttributedString生成CTFrame并保存起来，把YYChatMarqueeTextParser生成的YYChatMarqueeTextAttachment也保存起来
+
+4.创建YYChatMarqueeLabelView，并传入刚创建的YYChatMarqueeText
+
+5.YYChatMarqueeLabelView会在drawRect方法中取出YYChatMarqueeText的CTFrame进行渲染
+
+6.YYChatMarqueeLabelView会在drawRect方法中取出YYChatMarqueeText里面的YYChatMarqueeTextAttachment里面的UIImage进行渲染
+
+![关系图](https://github.com/673697831/YYChatMarqueeLabelView/blob/master/doc/rela.png?raw=true)
+
+
 
 
 
