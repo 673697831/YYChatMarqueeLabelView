@@ -11,15 +11,21 @@
 #import <UIKit/UIKit.h>
 #import "YYChatMarqueeTextAttachment.h"
 
+@protocol YYChatMarqueeTextDelegate <NSObject>
+
+
+
+@end
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface YYChatMarqueeText : NSObject
 
 - (instancetype)initWithAttributeString:(NSAttributedString *)attributeString maxWidth:(CGFloat)maxWidth;
 
-@property (nonatomic) CTFrameRef stringFrame;
-@property (nonatomic, strong) NSArray<YYChatMarqueeTextAttachment *> *attachments;
-@property (nonatomic) CGSize suggestedSize;
+@property (nonatomic, readonly) CTFrameRef stringFrame;
+@property (nonatomic, strong, readonly) NSArray<YYChatMarqueeTextAttachment *> *attachments;
+@property (nonatomic, readonly) CGSize suggestedSize;
 
 @end
 

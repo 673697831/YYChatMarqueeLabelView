@@ -12,10 +12,18 @@
 
 @implementation YYChatMarqueeLabelView
 
+- (void)setMarqueeText:(YYChatMarqueeText *)marqueeText
+{
+    _marqueeText = marqueeText;
+    [self setNeedsDisplay];
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {
         self.backgroundColor = [UIColor clearColor];
+        //异步描绘，提高性能？
+        self.layer.drawsAsynchronously = YES;
     }
     
     return self;
@@ -25,6 +33,8 @@
 {
     if (self = [super initWithCoder:aDecoder]) {
         self.backgroundColor = [UIColor clearColor];
+        //异步描绘，提高性能？
+        self.layer.drawsAsynchronously = YES;
     }
     
     return self;
@@ -38,15 +48,18 @@
         return;
     }
     
-    //1.绘制必要的几部
+    //得到上下文
     CGContextRef context = UIGraphicsGetCurrentContext();
+    //坐标翻转
     CGContextSetTextMatrix(context, CGAffineTransformIdentity);
     CGContextTranslateCTM(context, 0, self.bounds.size.height);
     CGContextScaleCTM(context, 1.0, -1.0);
 
-    //2.画文字
+    //创建绘制内容
+    //绘制
+    //画文字
     CTFrameDraw(self.marqueeText.stringFrame, context);
-    //3.画图片
+    //画图片
     for (YYChatMarqueeTextAttachment *attachment in self.marqueeText.attachments) {
         if ([attachment.obj isKindOfClass:[UIImage class]]) {
             CGContextDrawImage(context,attachment.imageRect, ((UIImage *)(attachment.obj)).CGImage);
