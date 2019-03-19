@@ -22,6 +22,12 @@ pod 'YYChatMarqueeLabelView', :git => 'https://github.com/673697831/YYChatMarque
 
 ```
 
+```ruby
+# 版本2 跑马灯业务
+pod 'YYChatMarqueeLabelView', :git => 'https://github.com/673697831/YYChatMarqueeLabelView.git', :tag => ‘1.0.0’
+
+```
+
 ## Author
 
 ouzhirui, ouzhirui@yy.com
@@ -30,14 +36,12 @@ ouzhirui, ouzhirui@yy.com
 
 YYChatMarqueeLabelView is available under the MIT license. See the LICENSE file for more info.
 
-
-> 以下是基于CoreText的排版引擎,
+> 以下是基于 CoreText 的排版引擎,
 > 基本实现和用法笔记
 
-
-
 ## dispatch_set_target_queue
-创建一个子线程去做CTFrameRef的生成和高度的计算，并为队列设置低优先级
+
+创建一个子线程去做 CTFrameRef 的生成和高度的计算，并为队列设置低优先级
 
 ```objc
 dispatch_queue_t dispatch_get_marquee_queue() {
@@ -55,10 +59,11 @@ dispatch_queue_t dispatch_get_marquee_queue() {
 }
 ```
 
-
 ## dispatch_semaphore
+
 生成加锁
-```objc 
+
+```objc
 _semaphore = dispatch_semaphore_create(1);
 dispatch_semaphore_wait(_semaphore, DISPATCH_TIME_FOREVER);
 dispatch_async(dispatch_get_marquee_queue(), ^{
@@ -68,6 +73,7 @@ dispatch_async(dispatch_get_marquee_queue(), ^{
 ```
 
 外部访问属性加锁
+
 ```objc
 - (CTFrameRef)stringFrame
 {
@@ -101,20 +107,22 @@ dispatch_async(dispatch_get_marquee_queue(), ^{
 }
 ```
 
-## CoreText简介
-* 我们常用的UILabel控件进行富文本的展示
-* UILabel的底层是基于Text Kit
-* 营收跑马灯富文本是基于Text Kit而不是UILabel
-* Text Kit 底层是CoreText
-* Text Kit 和 CoreText的实现都是基于自定义UIView，重写drawRect方法
-<img src="https://images2015.cnblogs.com/blog/791499/201612/791499-20161226102517382-1268805252.png" width = "619" height = "224" alt="图片名称" 
-align=center>
+## CoreText 简介
 
-## CoreText的基本实现步骤
-* 自定义View，重写drawRect方法，后面的操作均在其中进行
-* 得到当前绘图上下问文，用于后续将内容绘制在画布上
-* 将坐标系翻转
-* 创建绘制的区域，写入要绘制的内容
+- 我们常用的 UILabel 控件进行富文本的展示
+- UILabel 的底层是基于 Text Kit
+- 营收跑马灯富文本是基于 Text Kit 而不是 UILabel
+- Text Kit 底层是 CoreText
+- Text Kit 和 CoreText 的实现都是基于自定义 UIView，重写 drawRect 方法
+  <img src="https://images2015.cnblogs.com/blog/791499/201612/791499-20161226102517382-1268805252.png" width = "619" height = "224" alt="图片名称" 
+  align=center>
+
+## CoreText 的基本实现步骤
+
+- 自定义 View，重写 drawRect 方法，后面的操作均在其中进行
+- 得到当前绘图上下问文，用于后续将内容绘制在画布上
+- 将坐标系翻转
+- 创建绘制的区域，写入要绘制的内容
 
 ```objc
 @interface YYChatMarqueeLabelView : UIView
@@ -152,62 +160,27 @@ align=center>
 }
 ```
 
-## 基于CoreText的基本封装
+## 基于 CoreText 的基本封装
+
 我们可以将功能拆分为以下几个类来完成
-* YYChatMarqueeLabelView：一个显示用的类，仅仅负责渲染
-* YYChatMarqueeText：一个模型类， 用于保存富文本的所有内容
-* YYChatMarqueeTextAttachment：一个附件类, 用于保存图片附件和计算的高度
-* YYChatMarqueeTextParser：一个工具类，用于转换和封装
 
-这4个类的关系是这样的：
+- YYChatMarqueeLabelView：一个显示用的类，仅仅负责渲染
+- YYChatMarqueeText：一个模型类， 用于保存富文本的所有内容
+- YYChatMarqueeTextAttachment：一个附件类, 用于保存图片附件和计算的高度
+- YYChatMarqueeTextParser：一个工具类，用于转换和封装
 
-1.YYChatMarqueeText被创建时需要传入NSAttributedString，并在内部创建一个YYChatMarqueeTextParser
+这 4 个类的关系是这样的：
 
-2.YYChatMarqueeTextParser会解析传入的NSAttributedString解析出包含图片的封装类YYChatMarqueeTextAttachment
+1.YYChatMarqueeText 被创建时需要传入 NSAttributedString，并在内部创建一个 YYChatMarqueeTextParser
 
-3.YYChatMarqueeText根据传入NSAttributedString生成CTFrame并保存起来，把YYChatMarqueeTextParser生成的YYChatMarqueeTextAttachment也保存起来
+2.YYChatMarqueeTextParser 会解析传入的 NSAttributedString 解析出包含图片的封装类 YYChatMarqueeTextAttachment
 
-4.创建YYChatMarqueeLabelView，并传入刚创建的YYChatMarqueeText
+3.YYChatMarqueeText 根据传入 NSAttributedString 生成 CTFrame 并保存起来，把 YYChatMarqueeTextParser 生成的 YYChatMarqueeTextAttachment 也保存起来
 
-5.YYChatMarqueeLabelView会在drawRect方法中取出YYChatMarqueeText的CTFrame进行渲染
+4.创建 YYChatMarqueeLabelView，并传入刚创建的 YYChatMarqueeText
 
-6.YYChatMarqueeLabelView会在drawRect方法中取出YYChatMarqueeText里面的YYChatMarqueeTextAttachment里面的UIImage进行渲染
+5.YYChatMarqueeLabelView 会在 drawRect 方法中取出 YYChatMarqueeText 的 CTFrame 进行渲染
+
+6.YYChatMarqueeLabelView 会在 drawRect 方法中取出 YYChatMarqueeText 里面的 YYChatMarqueeTextAttachment 里面的 UIImage 进行渲染
 
 ![关系图](https://github.com/673697831/YYChatMarqueeLabelView/blob/master/doc/rela.png?raw=true)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
