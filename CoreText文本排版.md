@@ -62,7 +62,7 @@
 ## 描绘设置好的文本
 ```objc
 void CTFrameDraw(CTFrameRef frame, CGContextRef context)
-```
+``` 
 
 ## 如何获得文本的frame信息？
 需要计算文本所需的 `frame` ，需要用到
@@ -103,3 +103,109 @@ CTFramesetterRef CTFramesetterCreateWithAttributedString(CFAttributedStringRef s
 
 * `*m` 是一个指向仿射变换矩阵的指针，如果不需要可以设置为 `NULL`，如果指定了矩阵，`Core Graphics` 将转换应用于矩形，然后将其添加到路径中。
 * `rect` 就是需要将该矩阵添加到哪里。
+
+## 描绘的长度
+
+```objc
+CFRange stringRange = CFRangeMake(0, attributedStr.length);
+```
+
+## 文本所占空间计算
+
+```objc
+CGSize CTFramesetterSuggestFrameSizeWithConstraints(
+    CTFramesetterRef framesetter,
+    CFRange stringRange,
+    CFDictionaryRef _Nullable frameAttributes,
+    CGSize constraints,
+    CFRange * _Nullable fitRange ) CT_AVAILABLE(macos(10.5), ios(3.2), watchos(2.0), tvos(9.0));
+```
+
+## 描绘文本信息
+
+```objc
+CGSize CTFramesetterSuggestFrameSizeWithConstraints(
+    CTFramesetterRef framesetter,
+    CFRange stringRange,
+    CFDictionaryRef _Nullable frameAttributes,
+    CGSize constraints,
+    CFRange * _Nullable fitRange ) CT_AVAILABLE(macos(10.5), ios(3.2), watchos(2.0), tvos(9.0));
+```
+
+## 描绘设置好的图片
+
+```objc
+CG_EXTERN void CGContextDrawImage(CGContextRef cg_nullable c, CGRect rect,
+    CGImageRef cg_nullable image)
+    CG_AVAILABLE_STARTING(10.0, 2.0);
+```
+
+## TextKit 简介
+
+- 渲染过程
+
+
+```objc
+@implementation YYChatMarqueeLabel
+
+- (void)drawRect:(CGRect)rect {
+    [super drawRect:rect];
+    if (self.chatModel && [self.chatModel respondsToSelector:@selector(getLayoutManagerWithWidth:)] &&
+        [self.chatModel respondsToSelector:@selector(chatTextStorage)]) {
+
+        NSLayoutManager *layoutManager = [self.chatModel getLayoutManagerWithWidth:self.maxHeight];
+        NSTextStorage *textStorage = [self.chatModel chatTextStorage];
+
+        @autoreleasepool {
+            // TextKit 渲染，性能好些
+            if (layoutManager && textStorage) {
+                NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:NSMakeRange(0, textStorage.length)
+                                                           actualCharacterRange:NULL];
+                [layoutManager drawGlyphsForGlyphRange:glyphRange atPoint:CGPointZero];
+                return;
+            }
+
+            // 备份渲染方式
+            if ([self.chatModel respondsToSelector:@selector(attributedString)]) {
+                [self.chatModel.attributedString
+                    drawWithRect:rect
+                         options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+                         context:nil];
+                return;
+            }
+        }
+    }
+}
+```
+
+- 计算过程，在 `NSObject+TextKit`
+
+```objc
+- (CGRect)getFitRectWithWidth:(NSNumber *)width {
+    if (!width) {
+        return CGRectZero;
+    }
+
+    NSLayoutManager *chatLayoutManager = [[NSLayoutManager alloc] init];
+    NSTextContainer *chatTextContainer = [[NSTextContainer alloc] initWithSize:CGSizeMake(width.floatValue, MAXFLOAT)];
+
+    chatTextContainer.lineFragmentPadding = 0.0f;
+
+    [chatLayoutManager addTextContainer:chatTextContainer];
+    chatLayoutManager.delegate = self;
+    
+    NSTextStorage *textStorage = self.chatTextStorage;
+
+    if (!textStorage) {
+        if (self.attributedString) {
+            textStorage = [[NSTextStorage alloc] initWithAttributedString:self.attributedString];
+        } else {
+            textStorage = [[NSTextStorage alloc] initWithString:@""];
+        }
+```
+
+## 性能对比和优化
+* 自己用 `CoreText` 实现跑马灯会比 `TextKit` 生成的时间本来就短
+* 用 `CoreText` 实现跑马灯会比 `TextKit` 更加灵活
+* 把非渲染部分放到子线程那里，因为跑马灯是一个一个播放的，在收到广播之后可以在子线程那里做预处理
+* 非渲染部分包括计算宽高和生成文字和图片
