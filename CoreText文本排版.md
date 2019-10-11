@@ -121,17 +121,6 @@ CGSize CTFramesetterSuggestFrameSizeWithConstraints(
     CFRange * _Nullable fitRange ) CT_AVAILABLE(macos(10.5), ios(3.2), watchos(2.0), tvos(9.0));
 ```
 
-## 描绘文本信息
-
-```objc
-CGSize CTFramesetterSuggestFrameSizeWithConstraints(
-    CTFramesetterRef framesetter,
-    CFRange stringRange,
-    CFDictionaryRef _Nullable frameAttributes,
-    CGSize constraints,
-    CFRange * _Nullable fitRange ) CT_AVAILABLE(macos(10.5), ios(3.2), watchos(2.0), tvos(9.0));
-```
-
 ## 描绘设置好的图片
 
 ```objc
