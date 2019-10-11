@@ -103,7 +103,7 @@ dispatch_async(dispatch_get_marquee_queue(), ^{
     dispatch_semaphore_wait(_semaphore, DISPATCH_TIME_FOREVER);
     size = self.mySuggestedSize;
     dispatch_semaphore_signal(_semaphore);
-    return self.mySuggestedSize;
+    return self.size;
 }
 ```
 
