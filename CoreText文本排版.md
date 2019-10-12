@@ -198,3 +198,34 @@ CG_EXTERN void CGContextDrawImage(CGContextRef cg_nullable c, CGRect rect,
 * 用 `CoreText` 实现跑马灯会比 `TextKit` 更加灵活
 * 把非渲染部分放到子线程那里，因为跑马灯是一个一个播放的，在收到广播之后可以在子线程那里做预处理
 * 非渲染部分包括计算宽高和生成文字和图片
+
+## `CoreText` 中的内存管理
+
+一般来说，以 `CF` 开头的系统API都是 `CoreFoundation` 框架的手动管理，说白了，就是谁创建，谁销毁。
+创建 `CF` 对象
+
+```objc
+    CTFramesetterRef frameSetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)myStr);
+
+    CGMutablePathRef path = CGPathCreateMutable();
+
+    CTRunDelegateRef delegate = CTRunDelegateCreate(& callBacks, (__bridge void *)dicPic);
+
+```
+
+创建后 对象的引用计数器 = 1
+当这些对象不需要再使用时，用么就需要调用 `CFRelease` 来使计数器-1
+
+```objc
+    CFRelease(frameSetter);
+    CFRelease(path);
+    CFRelease(delegate);
+```
+
+除此之外，还有另外一个问题需要解决。在 ARC 下，我们有时需要将一个 Core Foundation 对象转换成一个 Objective-C 对象，这个时候我们需要告诉编译器，转换过程中的引用计数需要做如何的调整。这就引入了bridge相关的关键字，以下是这些关键字的说明:
+
+* __bridge: 只做类型转换，不修改相关对象的引用计数，原来的 Core Foundation 对象在不用-时，需要调用 CFRelease 方法。
+
+* __bridge_retained：类型转换后，将相关对象的引用计数加 1，原来的 Core Foundation 对象在不用时，需要调用 CFRelease 方法。
+
+* __bridge_transfer：类型转换后，将该对象的引用计数交给 ARC 管理，Core Foundation 对象在不用时，不再需要调用 CFRelease 方法。
